@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mv /home/vagrant/scripts/* /usr/local/bin
-rm -f /home/vagrant/scripts
+rm -r /home/vagrant/scripts
 
-chown root. /usr/local/bin/*.sh
-chmod +x /usr/local/bin/*.sh
+chown root. /usr/local/bin/*
+chmod +x /usr/local/bin/*
