@@ -15,5 +15,6 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "docker"
   config.vm.network :private_network, ip: IPRANGE + IPSUFFIX
   config.vm.network "forwarded_port", guest: 22, host: 8022
-  config.vm.provision "file", source: "./bin", destination: "/usr/local/bin"
+  config.vm.provision "file", source: "./scripts", destination: "~/scripts"
+  config.vm.provision "shell", path: "./setup.sh"
 end
