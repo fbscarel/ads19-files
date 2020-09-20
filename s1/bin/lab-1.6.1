@@ -1,0 +1,8 @@
+#!/bin/bash
+
+docker       rm -f $( docker ps     -aq ) &> /dev/null
+docker image rm -f $( docker images -aq ) &> /dev/null
+
+docker image pull debian       &> /dev/null
+docker image pull redis        &> /dev/null
+docker image pull nginx:alpine &> /dev/null

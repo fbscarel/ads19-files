@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for i in {1..3}; do
+  [ ${i} -eq 2 ] && imgname="nginx" || imgname="nginx:alpine"
+  docker run -d --name web-${i} ${imgname} &> /dev/null
+done

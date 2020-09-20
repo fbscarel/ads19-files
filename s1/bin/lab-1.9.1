@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker rm -f $( docker ps -aq ) &> /dev/null
+
+for i in {1..3}; do
+  docker run -d --name web-${i} nginx:alpine &> /dev/null
+done

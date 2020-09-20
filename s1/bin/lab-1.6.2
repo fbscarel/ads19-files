@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd ~
+git clone https://github.com/fbscarel/myapp-color.git &> /dev/null
+sed -i 's/-alpine$//' ~/myapp-color/Dockerfile

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+docker network ls --format 'table {{.Name}},{{.ID}}' | grep -v '^NAME,\|^bridge,\|host,\|none' | cut -d, -f2 | xargs docker network rm &> /dev/null
+
+docker rm -f $( docker ps -aq ) &> /dev/null
+
+docker run -d --name web-1 --network none nginx:alpine
