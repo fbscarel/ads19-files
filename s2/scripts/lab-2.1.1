@@ -1,3 +1,27 @@
 #!/bin/bash
 
-echo "placeholder"
+cat << EOF | kubectl create -f - &> /dev/null
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alpha
+spec:
+  containers:
+  - image: debian:stable-slim
+    name: alpha-1
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+EOF
+
+cat << EOF | kubectl create -f - &> /dev/null
+apiVersion: v1
+kind: Pod
+metadata:
+  name: beta
+spec:
+  containers:
+  - image: httpd:alpine
+    name: beta-1
+  - image: bredis:alpine
+    name: beta-2
+EOF
