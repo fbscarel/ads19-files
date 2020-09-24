@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 mv /home/vagrant/scripts/* /usr/local/bin
 rm -r /home/vagrant/scripts
