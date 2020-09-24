@@ -97,10 +97,10 @@ if [ "$1" == "master" ]; then
   chown $(id -u):$(id -g) $HOME/.kube/config
 
   # Install Flannel CNI plugin
-  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+  #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
   # Install Weave-net CNI plugin
-  #kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
   # Create kubeadm join token
   kubeadm token create --print-join-command > /opt/join_token

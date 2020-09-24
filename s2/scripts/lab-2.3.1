@@ -1,0 +1,24 @@
+#!/bin/bash
+
+kubectl delete pod --all &> /dev/null
+
+cat << EOF | kubectl create -f - &> /dev/null
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: rs-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - name: slp
+        image: alpine42
+        command: [ "/usr/bin/sleep", "7200"]
+EOF
