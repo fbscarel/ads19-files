@@ -89,15 +89,18 @@ kubectl completion bash >/etc/bash_completion.d/kubectl
 
 if [ "$1" == "master" ]; then
   # Initialize cluster
-  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name "$( hostname )" #--pod-network-cidr=10.32.0.0/12
+  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name "$( hostname )" --pod-network-cidr=10.244.0.0/16
 
   # Configure kubectl
   mkdir -p $HOME/.kube
   cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   chown $(id -u):$(id -g) $HOME/.kube/config
 
+  # Install Flannel CNI plugin
+  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
   # Install Weave-net CNI plugin
-  kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+  #kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
   # Create kubeadm join token
   kubeadm token create --print-join-command > /opt/join_token
