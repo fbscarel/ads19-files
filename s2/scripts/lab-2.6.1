@@ -1,0 +1,18 @@
+#!/bin/bash
+
+kubectl delete pod,rs,deploy  --all &> /dev/null
+kubectl delete svc svc-myapp-color &> /dev/null
+
+namespaces=( bar cinema restaurant theater zoo )
+
+for ns in "${namespaces[@]}"; do
+  kubectl create namespace ${ns} &> /dev/null
+done
+
+for ((i=1;i<=3;i++)); do
+   kubectl -n bar run beer-${i} --image=nginx:alpine &> /dev/null
+done
+
+kubectl -n cinema run casablanca --image=postgres:9.6-alpine --port=5432 --expose=true --env="POSTGRES_PASSWORD=qwerty" &> /dev/null
+kubectl -n zoo run lion --image=redis:alpine --port=6379 --expose=true &> /dev/null
+kubectl -n zoo run zebra --image=fbscarel/dnsutils --command -- /bin/bash -c "while true; do sleep 600; done" &> /dev/null

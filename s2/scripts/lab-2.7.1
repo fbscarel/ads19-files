@@ -1,0 +1,8 @@
+#!/bin/bash
+
+namespaces=( bar cinema restaurant theater zoo )
+
+for ns in "${namespaces[@]}"; do
+  kubectl -n ${ns} delete all --all &> /dev/null
+  kubectl delete ns ${ns} &> /dev/null
+done

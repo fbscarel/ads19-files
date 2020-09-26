@@ -1,24 +1,25 @@
 #!/bin/bash
 
-kubectl delete pod --all &> /dev/null
+kubectl delete pod,rs,deploy  --all &> /dev/null
 
 cat << EOF | kubectl create -f - &> /dev/null
 apiVersion: apps/v1
-kind: ReplicaSet
+kind: Deployment
 metadata:
-  name: rs-app
+  name: deploy-web
+  labels:
+    app: web
 spec:
   replicas: 3
   selector:
     matchLabels:
-      tier: frontend
+      app: httpd
   template:
     metadata:
       labels:
-        tier: frontend
+        app: httpd
     spec:
       containers:
-      - name: slp
-        image: alpine42
-        command: [ "sleep", "7200"]
+      - name: httpd
+        image: htttpd:alpine
 EOF

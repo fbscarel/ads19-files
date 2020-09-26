@@ -1,0 +1,6 @@
+#!/bin/bash
+
+kubectl delete pod,rs,deploy  --all &> /dev/null
+
+kubectl create deployment myapp-color --image=fbscarel/myapp-color &> /dev/null
+kubectl scale deployment myapp-color --replicas=3 &> /dev/null
