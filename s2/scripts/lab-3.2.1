@@ -1,0 +1,17 @@
+#!/bin/bash
+
+mv /opt/kube-scheduler.yaml /etc/kubernetes/manifests &> /dev/null
+kubectl delete pod --all &> /dev/null
+
+kubectl run castlevania --image=nginx:alpine -l sys=nes,pub=konami,genre=action &> /dev/null
+kubectl run megaman --image=nginx:alpine -l sys=nes,pub=capcom,genre=platform &> /dev/null
+kubectl run zelda --image=nginx:alpine -l sys=nes,pub=nintendo,genre=rpg &> /dev/null
+
+kubectl run sonic --image=nginx:alpine -l sys=genesis,pub=sega,genre=platform &> /dev/null
+kubectl run roadrash --image=nginx:alpine -l sys=genesis,pub=ea,genre=racing &> /dev/null
+kubectl run streetfighter --image=nginx:alpine -l sys=genesis,pub=capcom,genre=fighting &> /dev/null
+
+kubectl create deploy metalgear --image=nginx:alpine &> /dev/null
+kubectl label deployments.apps metalgear sys=ps1 pub=konami genre=action &> /dev/null
+kubectl run granturismo --image=nginx:alpine -l sys=ps1,pub=sony,genre=racing &> /dev/null
+kubectl run ff7 --image=nginx:alpine -l sys=ps1,pub=square,genre=rpg &> /dev/null

@@ -85,7 +85,9 @@ echo "KUBELET_EXTRA_ARGS=--node-ip=${MYIP}" >> /etc/default/kubelet
 systemctl restart kubelet
 
 # Configure kubectl autocompletion
-kubectl completion bash >/etc/bash_completion.d/kubectl
+kubectl completion bash > /etc/bash_completion.d/kubectl
+echo 'alias k=kubectl' >> ~/.bashrc
+echo 'complete -F __start_kubectl k' >> ~/.bashrc
 
 if [ "$1" == "master" ]; then
   # Initialize cluster
