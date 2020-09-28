@@ -1,0 +1,5 @@
+#!/bin/bash
+
+kubectl delete pod,rs,deploy --all &> /dev/null
+
+kubectl run rhino --image=polinux/stress --requests='memory=50Mi' --limits='memory=100Mi' -- stress --vm 1 --vm-bytes 250M --vm-hang 1 &> /dev/null

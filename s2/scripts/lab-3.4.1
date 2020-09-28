@@ -1,0 +1,6 @@
+#!/bin/bash
+
+kubectl delete pod,rs,deploy --all &> /dev/null
+
+kubectl patch node s2-master-1 -p '{"spec":{"taints":[]}}' &> /dev/null
+kubectl patch node s2-node-1   -p '{"spec":{"taints":[]}}' &> /dev/null
