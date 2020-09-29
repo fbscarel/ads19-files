@@ -1,0 +1,21 @@
+#!/bin/bash
+
+kubectl -n kube-system delete ds fluentd-elasticsearch &> /dev/null
+
+sudo -u vagrant ssh -i /home/vagrant/.ssh/tmpkey s2-node-1 /bin/bash << EOS &> /dev/null
+sudo mkdir -p /etc/cowabunga
+sudo sed -i 's/^\(staticPodPath: \).*/\1\/etc\/cowabunga/' /var/lib/kubelet/config.yaml
+sudo systemctl restart kubelet
+sudo bash -c 'cat << EOF >> /etc/cowabunga/turtlepower.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: turtlepower
+  name: turtlepower
+spec:
+  containers:
+  - image: httpd:alpine
+    name: turtlepower
+EOF'
+EOS
