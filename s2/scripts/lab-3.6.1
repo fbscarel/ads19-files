@@ -2,6 +2,6 @@
 
 kubectl delete pod,rs,deploy --all &> /dev/null
 
-kubectl taint node s2-master-1 node-role.kubernetes.io/master:NoSchedule
+kubectl taint node s2-master-1 node-role.kubernetes.io/master:NoSchedule &> /dev/null
 
 kubectl run rhino --image=polinux/stress --requests='memory=50Mi' --limits='memory=100Mi' -- stress --vm 1 --vm-bytes 250M --vm-hang 1 &> /dev/null
