@@ -1,0 +1,13 @@
+#!/bin/bash
+
+rm -rf /etc/kubernetes/manifests/static-nginx.yaml &> /dev/null
+
+sudo -u vagrant ssh -i /home/vagrant/.ssh/tmpkey s2-node-1 /bin/bash << EOS &> /dev/null
+sudo rm -rf /etc/cowabunga
+sudo sed -i 's/^\(staticPodPath: \).*/\1\/etc\/kubernetes\/manifests/' /var/lib/kubelet/config.yaml
+sudo systemctl restart kubelet
+EOS
+
+kubectl run raph --image=polinux/stress -- stress --vm 1 --vm-bytes 50M --vm-hang 1 &> /dev/null
+
+kubectl run don --image=polinux/stress -- stress --cpu 1 &> /dev/null
