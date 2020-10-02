@@ -1,0 +1,6 @@
+#!/bin/bash
+
+kubectl delete pod,rs,deploy --all &> /dev/null
+kubectl delete svc -l provider!=kubernetes &> /dev/null
+
+kubectl run sleeper --image=alpine -- sleep 3600 &> /dev/null
