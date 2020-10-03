@@ -4,3 +4,20 @@ kubectl delete pod,rs,deploy,cm --all &> /dev/null
 kubectl delete svc -l provider!=kubernetes &> /dev/null
 kubectl delete secret daytona-secret-yaml &> /dev/null
 kubectl delete secret daytona-secret-kubectl &> /dev/null
+
+cat << EOF | kubectl create -f - &> /dev/null
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: flintstones
+  name: flintstones
+spec:
+  containers:
+  - image: nginx:alpine
+    name: fred
+  - image: redis:alpine
+    name: wilma
+  - image: httpd:alpine
+    name: barney
+EOF

@@ -1,0 +1,48 @@
+#!/bin/bash
+
+kubectl delete pod,rs,deploy --all &> /dev/null
+
+cat << EOF | kubectl create -f - &> /dev/null
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: wackyraces
+  name: wackyraces
+spec:
+  initContainers:
+  - image: alpine
+    name: muttley
+    args:
+      - sleep
+      - "3"
+  containers:
+  - image: busybox
+    name: dastardly
+    args:
+      - sleep
+      - "1200"
+EOF
+
+cat << EOF | kubectl create -f - &> /dev/null
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: scoobydoo
+  name: scoobydoo
+spec:
+  containers:
+  - image: busybox
+    name: daphne
+    args:
+      - sleep
+      - "1200"
+  - image: busybox
+    name: velma
+    args:
+      - sleep
+      - "1200"
+EOF
+
+kubectl run woodpecker --image=busybox -- sleep 1200 &> /dev/null
