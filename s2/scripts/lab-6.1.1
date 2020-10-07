@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sed -i 's/\(etcd-cafile=\).*/\1\/etc\/kubernetes\/pki\/ca.crt/' /etc/kubernetes/manifests/kube-apiserver.yaml
