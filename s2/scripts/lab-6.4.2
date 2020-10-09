@@ -1,0 +1,23 @@
+#!/bin/bash
+
+rm -rf /etc/kubernetes/pki/users &> /dev/null
+kubectl delete clusterrolebinding mcclane-admin &> /dev/null
+
+kubectl create ns spielberg &> /dev/null
+kubectl -n spielberg run et --image=nginx:alpine &> /dev/null
+kubectl -n spielberg run indiana --image=nginx:alpine &> /dev/null
+
+cat <<EOF | kubectl apply -f - &> /dev/null
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: spielberg
+  name: pod-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  resourceNames: ["et"]
+  verbs: ["get", "watch", "list"]
+EOF
+
+kubectl -n spielberg create rolebinding pod-reader-mario --role=pod-reader --user=mario &> /dev/null

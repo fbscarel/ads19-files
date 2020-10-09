@@ -1,0 +1,83 @@
+#!/bin/bash
+
+mkdir -p /etc/kubernetes/pki/users &> /dev/null
+
+openssl req -nodes -newkey rsa:2048 -keyout /etc/kubernetes/pki/users/mcclane.key -out /etc/kubernetes/pki/users/mcclane.csr -subj "/C=US/ST=CA/L=Los Angeles/O=Nakatomi Corp/OU=34th floor/CN=mcclane" &> /dev/null
+
+MCCLANE_CSR="$( cat /etc/kubernetes/pki/users/mcclane.csr | base64 | tr -d '\n' )"
+
+cat <<EOF | kubectl apply -f - &> /dev/null
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: mcclane
+spec:
+  groups:
+  - system:authenticated
+  - system:masters
+  request: ${MCCLANE_CSR}
+  signerName: kubernetes.io/kube-apiserver-client
+  usages:
+  - client auth
+EOF
+
+kubectl certificate approve mcclane &> /dev/null
+kubectl get csr/mcclane -o jsonpath='{.status.certificate}' | base64 -d > /etc/kubernetes/pki/users/mcclane.crt
+kubectl create clusterrolebinding mcclane-admin --clusterrole=cluster-admin --user=mcclane &> /dev/null
+
+kubectl delete csr mcclane &> /dev/null
+rm -f /etc/kubernetes/pki/users/mcclane.csr &> /dev/null
+
+cat << EOF > /root/custom-kubeconfig
+apiVersion: v1
+kind: Config
+
+clusters:
+- name: bloodsport
+  cluster:
+    certificate-authority: /etc/kubernetes/pki/ca.crt
+    server: https://192.168.68.20:6443
+
+- name: diehard
+  cluster:
+    certificate-authority: /etc/kubernetes/pki/ca.crt
+    server: https://192.168.68.20:6443
+
+- name: predator
+  cluster:
+    certificate-authority: /etc/kubernetes/pki/ca.crt
+    server: https://192.168.68.20:6443
+
+contexts:
+- name: dutch@predator
+  context:
+    cluster: predator
+    user: dutch
+
+- name: dux@bloodsport
+  context:
+    cluster: bloodsport
+    user: dux
+
+- name: mcclane@diehard
+  context:
+    cluster: diehard
+    user: mcclane
+
+users:
+- name: dutch
+  user:
+    client-certificate: /etc/kubernetes/pki/users/dutch.crt
+    client-key: /etc/kubernetes/pki/users/dutch.key
+- name: dux
+  user:
+    client-certificate: /etc/kubernetes/pki/users/dux.crt
+    client-key: /etc/kubernetes/pki/users/dux.key
+- name: mcclane
+  user:
+    client-certificate: /etc/kubernetes/pki/users/mcclane.cert
+    client-key: /etc/kubernetes/pki/users/mcclane.key
+
+current-context: dutch@predator
+preferences: {}
+EOF
