@@ -3,6 +3,9 @@
 rm -rf /etc/kubernetes/pki/users &> /dev/null
 kubectl delete clusterrolebinding mcclane-admin &> /dev/null
 
+kubectl delete role pod-admin &> /dev/null
+kubectl delete rolebinding pod-admin-mario &> /dev/null
+
 kubectl create ns spielberg &> /dev/null
 kubectl -n spielberg run et --image=nginx:alpine &> /dev/null
 kubectl -n spielberg run indiana --image=nginx:alpine &> /dev/null
