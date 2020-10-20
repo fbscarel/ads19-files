@@ -91,7 +91,7 @@ echo 'complete -F __start_kubectl k' >> ~/.bashrc
 
 if [ "$1" == "master" ]; then
   # Initialize cluster
-  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name "$( hostname )" --pod-network-cidr=10.244.0.0/16
+  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name "$( hostname )" --pod-network-cidr=10.32.0.0/12
 
   # Configure kubectl
   mkdir -p $HOME/.kube
