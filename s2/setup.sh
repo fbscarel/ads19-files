@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-CONTAINERD_VERSION="1.3.7-1"
-DOCKER_VERSION="5:19.03.13~3-0~debian-$(lsb_release -cs)"
-K8S_VERSION="1.19.2-00"
+CONTAINERD_VERSION="1.2.13-2"
+DOCKER_VERSION="5:19.03.11~3-0~debian-$(lsb_release -cs)"
+K8S_VERSION="1.20.0-00"
 
 MYIFACE="eth1"
 MYIP="$( ip -4 addr show ${MYIFACE} | grep -oP '(?<=inet\s)\d+(\.\d+){3}' )"
@@ -29,7 +29,7 @@ EOF
 apt install -y apt-transport-https \
                ca-certificates     \
                curl                \
-               gnupg-agent         \
+               gnupg         \
                software-properties-common
 curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
 add-apt-repository "deb [arch=amd64] \
@@ -40,7 +40,7 @@ apt update
 apt install -y containerd.io=${CONTAINERD_VERSION} \
                docker-ce=${DOCKER_VERSION}      \
                docker-ce-cli=${DOCKER_VERSION}
-cat << EOF >> /etc/docker/daemon.json
+cat <<EOF | sudo tee /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
   "log-driver": "json-file",
