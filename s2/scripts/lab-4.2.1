@@ -2,5 +2,5 @@
 
 kubectl delete pod,rs,deploy --all &> /dev/null
 
-kubectl run mike --image=chentex/random-logger
-kubectl run leo --image=busybox --restart=Never  -- cat /etc/passswd
+kubectl run mike --image=chentex/random-logger &> /dev/null
+kubectl run leo --image=busybox --restart=Never  -- cat /etc/passswd &> /dev/null

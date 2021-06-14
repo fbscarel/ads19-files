@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-CONTAINERD_VERSION="1.2.13-2"
-DOCKER_VERSION="5:19.03.11~3-0~debian-$(lsb_release -cs)"
-K8S_VERSION="1.20.0-00"
+CONTAINERD_VERSION="1.4.6-1"
+DOCKER_VERSION="5:20.10.6~3-0~debian-$(lsb_release -cs)"
+K8S_VERSION="1.21.1-00"
 
 MYIFACE="eth1"
 MYIP="$( ip -4 addr show ${MYIFACE} | grep -oP '(?<=inet\s)\d+(\.\d+){3}' )"
@@ -50,16 +50,25 @@ cat <<EOF | sudo tee /etc/docker/daemon.json
   "storage-driver": "overlay2"
 }
 EOF
+
+# Enable and configure required modules
+cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+modprobe overlay
+modprobe br_netfilter
+
 mkdir -p /etc/systemd/system/docker.service.d
 systemctl daemon-reload
 systemctl restart docker
 systemctl enable docker
 
 # Enable bridged traffic through iptables
-modprobe br_netfilter
-cat << EOF >> /etc/sysctl.d/k8s.conf
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
 EOF
 sysctl --system
 
@@ -91,6 +100,7 @@ echo 'complete -F __start_kubectl k' >> ~/.bashrc
 
 if [ "$1" == "master" ]; then
   # Initialize cluster
+  kubeadm config images pull
   kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name "$( hostname )" --pod-network-cidr=10.32.0.0/12
 
   # Configure kubectl
