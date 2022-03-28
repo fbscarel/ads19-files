@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-CONTAINERD_VERSION="1.4.6-1"
-DOCKER_VERSION="5:20.10.6~3-0~debian-$(lsb_release -cs)"
-K8S_VERSION="1.21.1-00"
+CONTAINERD_VERSION="1.5.10-1"
+DOCKER_VERSION="5:20.10.13~3-0~debian-$(lsb_release -cs)"
+K8S_VERSION="1.23.5-00"
 
 MYIFACE="eth1"
 MYIP="$( ip -4 addr show ${MYIFACE} | grep -oP '(?<=inet\s)\d+(\.\d+){3}' )"
@@ -29,13 +29,14 @@ EOF
 apt install -y apt-transport-https \
                ca-certificates     \
                curl                \
-               gnupg         \
-               software-properties-common
-curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-add-apt-repository "deb [arch=amd64] \
-                    https://download.docker.com/linux/debian \
-                    $(lsb_release -cs) \
-                    stable"
+               gnupg               \
+               lsb-release
+curl -fsSL https://download.docker.com/linux/debian/gpg | \
+  sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt update
 apt install -y containerd.io=${CONTAINERD_VERSION} \
                docker-ce=${DOCKER_VERSION}      \
@@ -72,15 +73,19 @@ net.ipv4.ip_forward = 1
 EOF
 sysctl --system
 
+# Configure containerd
+mkdir -p /etc/containerd
+containerd config default | \
+  sed 's/^\([[:space:]]*SystemdCgroup = \).*/\1true/' | \
+  tee /etc/containerd/config.toml
+
 # Disable swap
 swapoff -a
 sed -i 's/^\(.*vg-swap.*\)/#\1/' /etc/fstab
 
 # Install kubeadm and friends
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-cat << EOF >> /etc/apt/sources.list.d/kubernetes.list
-deb https://apt.kubernetes.io/ kubernetes-xenial main
-EOF
+curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 apt update
 apt install -y kubelet=${K8S_VERSION} \
                kubeadm=${K8S_VERSION} \
@@ -101,7 +106,7 @@ echo 'complete -F __start_kubectl k' >> ~/.bashrc
 if [ "$1" == "master" ]; then
   # Initialize cluster
   kubeadm config images pull
-  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name "$( hostname )" --pod-network-cidr=10.32.0.0/12
+  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name="$( hostname )" --pod-network-cidr=10.32.0.0/12 --ignore-preflight-errors="all"
 
   # Configure kubectl
   mkdir -p $HOME/.kube

@@ -7,16 +7,16 @@ NODE_NUMBER = 1
 NODE_IP_SUFFIX  = 24
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "bento/debian-10.9"
-  config.vm.box_version = "202105.25.0"
+  config.vm.box = "bento/debian-11"
+  config.vm.box_version = "202112.19.0"
   config.vm.box_check_update = false
 
   (1..MASTER_NUMBER).each do |i|
     config.vm.define "s2-master-#{i}" do |node|
       node.vm.provider "virtualbox" do |vb|
         vb.name = "s2-master-#{i}"
-        vb.memory = 2048
-        vb.cpus = 2
+        vb.memory = 4096
+        vb.cpus = 1
       end
 
       node.vm.hostname = "s2-master-#{i}"
@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
       node.vm.provider "virtualbox" do |vb|
         vb.name = "s2-node-#{i}"
         vb.memory = 2048
-        vb.cpus = 2
+        vb.cpus = 1
       end
 
       node.vm.hostname = "s2-node-#{i}"
