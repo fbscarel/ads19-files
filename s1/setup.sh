@@ -45,5 +45,5 @@ chown root. /usr/local/bin/*
 chmod +x /usr/local/bin/*
 
 if nc -w3 -z ${PLABS_PROXY} ${PLABS_PORT}; then
-  setproxy()
+  setproxy
 fi
