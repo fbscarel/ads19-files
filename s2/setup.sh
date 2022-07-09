@@ -7,6 +7,49 @@ K8S_VERSION="1.23.5-00"
 MYIFACE="eth1"
 MYIP="$( ip -4 addr show ${MYIFACE} | grep -oP '(?<=inet\s)\d+(\.\d+){3}' )"
 
+PLABS_PROXY="192.168.255.13"
+PLABS_PORT="8080"
+
+
+# # #
+
+
+setproxy() {
+cat << EOF > /etc/profile.d/proxy.sh
+export http_proxy="http://${PLABS_PROXY}:${PLABS_PORT}/"
+export HTTP_PROXY="http://${PLABS_PROXY}:${PLABS_PORT}/"
+export https_proxy="http://${PLABS_PROXY}:${PLABS_PORT}/"
+export HTTPS_PROXY="http://${PLABS_PROXY}:${PLABS_PORT}/"
+export ftp_proxy="http://${PLABS_PROXY}:${PLABS_PORT}/"
+export FTP_PROXY="http://${PLABS_PROXY}:${PLABS_PORT}/"
+export no_proxy="127.0.0.1,localhost"
+export NO_PROXY="127.0.0.1,localhost"
+EOF
+chmod +x /etc/profile.d/proxy.sh
+
+cat << EOF > ~/.wgetrc
+use_proxy = on
+http_proxy = http://${PLABS_PROXY}:${PLABS_PORT}/
+https_proxy = http://${PLABS_PROXY}:${PLABS_PORT}/
+ftp_proxy = http://${PLABS_PROXY}:${PLABS_PORT}/
+EOF
+
+cat << EOF > /etc/apt/apt.conf.d/99proxy
+Acquire::http::proxy "http://${PLABS_PROXY}:${PLABS_PORT}/";
+Acquire::https::proxy "https://${PLABS_PROXY}:${PLABS_PORT}/";
+Acquire::ftp::proxy "ftp://${PLABS_PROXY}:${PLABS_PORT}/";
+EOF
+}
+
+
+# # #
+
+
+# Configure proxy if running on PracticeLabs
+if nc -w3 -z ${PLABS_PROXY} ${PLABS_PORT}; then
+  setproxy
+fi
+
 # Prepare SSH inter-VM communication
 mv /home/vagrant/ssh/* /home/vagrant/.ssh
 rm -r /home/vagrant/ssh
