@@ -18,6 +18,7 @@ export FTP_PROXY="http://${PLABS_PROXY}:${PLABS_PORT}/"
 export no_proxy="127.0.0.1,localhost"
 export NO_PROXY="127.0.0.1,localhost"
 EOF
+chmod +x /etc/profile.d/proxy.sh
 
 cat << EOF > ~/.wgetrc
 use_proxy = on
