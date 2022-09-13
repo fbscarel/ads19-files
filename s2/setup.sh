@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-CONTAINERD_VERSION="1.5.10-1"
-DOCKER_VERSION="5:20.10.13~3-0~debian-$(lsb_release -cs)"
-K8S_VERSION="1.23.5-00"
+CONTAINERD_VERSION="1.6.8-1"
+DOCKER_VERSION="5:20.10.17~3-0~debian-$(lsb_release -cs)"
+K8S_VERSION="1.23.10-00"
 
 MYIFACE="eth1"
 MYIP="$( ip -4 addr show ${MYIFACE} | grep -oP '(?<=inet\s)\d+(\.\d+){3}' )"
@@ -74,10 +74,11 @@ apt install -y apt-transport-https \
                curl                \
                gnupg               \
                lsb-release
+mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg | \
-  sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
   $(lsb_release -cs) stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 apt update
@@ -86,12 +87,9 @@ apt install -y containerd.io=${CONTAINERD_VERSION} \
                docker-ce-cli=${DOCKER_VERSION}
 cat <<EOF | sudo tee /etc/docker/daemon.json
 {
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
   "log-opts": {
     "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
+  }
 }
 EOF
 
