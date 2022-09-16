@@ -50,6 +50,20 @@ if nc -w3 -z ${PLABS_PROXY} ${PLABS_PORT}; then
   setproxy
 fi
 
+# Basic package installation
+apt update
+apt install -y vim dos2unix
+cat << EOF > /root/.vimrc
+set nomodeline
+set bg=dark
+set tabstop=2
+set expandtab
+set ruler
+set nu
+syntax on
+EOF
+find /usr/local/bin -name lab-* | xargs dos2unix
+
 # Prepare SSH inter-VM communication
 mv /home/vagrant/ssh/* /home/vagrant/.ssh
 rm -r /home/vagrant/ssh
