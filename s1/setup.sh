@@ -30,7 +30,21 @@ EOF
 cat << EOF > /etc/apt/apt.conf.d/99proxy
 Acquire::http::proxy "http://${PLABS_PROXY}:${PLABS_PORT}/";
 Acquire::https::proxy "http://${PLABS_PROXY}:${PLABS_PORT}/";
-Acquire::ftp::proxy "ftp://${PLABS_PROXY}:${PLABS_PORT}/";
+Acquire::ftp::proxy "http://${PLABS_PROXY}:${PLABS_PORT}/";
+EOF
+
+mkdir -p /root/.docker
+cat << EOF > /root/.docker/config.json
+{
+ "proxies": {
+   "default":   {
+     "httpProxy": "http://${PLABS_PROXY}:${PLABS_PORT}/",
+     "httpsProxy": "http://${PLABS_PROXY}:${PLABS_PORT}/",
+     "ftpProxy": "http://${PLABS_PROXY}:${PLABS_PORT}/",
+     "noProxy": "localhost,127.0.0.0/8,192.168.68.0/24"
+   }
+ }
+}
 EOF
 }
 
