@@ -36,7 +36,7 @@ EOF
 
 cat << EOF > /etc/apt/apt.conf.d/99proxy
 Acquire::http::proxy "http://${PLABS_PROXY}:${PLABS_PORT}/";
-Acquire::https::proxy "https://${PLABS_PROXY}:${PLABS_PORT}/";
+Acquire::https::proxy "http://${PLABS_PROXY}:${PLABS_PORT}/";
 Acquire::ftp::proxy "ftp://${PLABS_PROXY}:${PLABS_PORT}/";
 EOF
 }
