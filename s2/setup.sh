@@ -22,8 +22,8 @@ export https_proxy="http://${PLABS_PROXY}:${PLABS_PORT}/"
 export HTTPS_PROXY="http://${PLABS_PROXY}:${PLABS_PORT}/"
 export ftp_proxy="http://${PLABS_PROXY}:${PLABS_PORT}/"
 export FTP_PROXY="http://${PLABS_PROXY}:${PLABS_PORT}/"
-export no_proxy="127.0.0.1,localhost"
-export NO_PROXY="127.0.0.1,localhost"
+export no_proxy="127.0.0.1,localhost,192.168.68.20,192.168.68.25"
+export NO_PROXY="127.0.0.1,localhost,192.168.68.20,192.168.68.25"
 EOF
 chmod +x /etc/profile.d/proxy.sh
 
