@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-CONTAINERD_VERSION="1.6.8-1"
-DOCKER_VERSION="5:20.10.17~3-0~debian-$(lsb_release -cs)"
-K8S_VERSION="1.23.10-00"
+CONTAINERD_VERSION="1.6.20-1"
+DOCKER_VERSION="5:23.0.5-1~debian.$(cat /etc/debian_version | cut -d'.' -f1)~$(lsb_release -cs)"
+K8S_VERSION="1.27.1-00"
 
 MYIFACE="eth1"
 MYIP="$( ip -4 addr show ${MYIFACE} | grep -oP '(?<=inet\s)\d+(\.\d+){3}' )"
@@ -129,6 +129,10 @@ EOF
 modprobe overlay
 modprobe br_netfilter
 
+# install cri-dockerd
+wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.1/cri-dockerd_0.3.1.3-0.debian-bullseye_amd64.deb
+apt install -y ./cri-dockerd_0.3.1.3-0.debian-bullseye_amd64.deb
+
 mkdir -p /etc/systemd/system/docker.service.d
 systemctl daemon-reload
 systemctl restart docker
@@ -153,8 +157,8 @@ swapoff -a
 sed -i 's/^\(.*vg-swap.*\)/#\1/' /etc/fstab
 
 # Install kubeadm and friends
-curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 apt update
 apt install -y kubelet=${K8S_VERSION} \
                kubeadm=${K8S_VERSION} \
@@ -163,8 +167,8 @@ apt-mark hold kubelet \
               kubeadm \
               kubectl
 
-# Set correct IP address for kubelet
-echo "KUBELET_EXTRA_ARGS=--node-ip=${MYIP}" >> /etc/default/kubelet
+# Set correct IP address for kubelet, also use cri-dockerd
+echo "KUBELET_EXTRA_ARGS=\"--node-ip=192.168.68.20 --container-runtime-endpoint=unix:///var/run/cri-dockerd.sock\"" >> /etc/default/kubelet
 systemctl restart kubelet
 
 # Configure kubectl autocompletion
@@ -174,22 +178,25 @@ echo 'complete -F __start_kubectl k' >> ~/.bashrc
 
 if [ "$1" == "master" ]; then
   # Initialize cluster
-  kubeadm config images pull
-  kubeadm init --apiserver-advertise-address=${MYIP} --apiserver-cert-extra-sans=${MYIP} --node-name="$( hostname )" --pod-network-cidr=10.32.0.0/12 --ignore-preflight-errors="all"
+  kubeadm config images pull --cri-socket unix:///var/run/cri-dockerd.sock
+  kubeadm init --apiserver-advertise-address=${MYIP} \
+    --apiserver-cert-extra-sans=${MYIP} \
+    --cri-socket unix:///var/run/cri-dockerd.sock \
+    --node-name="$( hostname )" \
+    --pod-network-cidr=10.32.0.0/12 \
+    --ignore-preflight-errors="all"
 
   # Configure kubectl
   mkdir -p $HOME/.kube
   cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   chown $(id -u):$(id -g) $HOME/.kube/config
 
-  # Install Flannel CNI plugin
-  #kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
-  # Install Weave-net CNI plugin
-  kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+  # Install Calico CNI plugin
+  kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml
 
   # Create kubeadm join token
-  kubeadm token create --print-join-command > /opt/join_token
+  join_command="$( kubeadm token create --print-join-command )"
+  echo "${join_command} --cri-socket unix:///var/run/cri-dockerd.sock" > /opt/join_token
 
   # Copy exercise scripts, set permissions
   mv /home/vagrant/scripts/* /usr/local/bin
@@ -199,6 +206,7 @@ if [ "$1" == "master" ]; then
 else
   # Copy join token and enter cluster
   sudo -u vagrant scp -i /home/vagrant/.ssh/tmpkey vagrant@s2-master-1:/opt/join_token /tmp
+  echo -n " --cri-socket unix:///var/run/cri-dockerd.sock" >> /tmp/join_token
   sh /tmp/join_token
   rm -f /tmp/join_token
 fi
