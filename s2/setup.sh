@@ -168,7 +168,7 @@ apt-mark hold kubelet \
               kubectl
 
 # Set correct IP address for kubelet, also use cri-dockerd
-echo "KUBELET_EXTRA_ARGS=\"--node-ip=192.168.68.20 --container-runtime-endpoint=unix:///var/run/cri-dockerd.sock\"" >> /etc/default/kubelet
+echo "KUBELET_EXTRA_ARGS=\"--node-ip=${MYIP} --container-runtime-endpoint=unix:///var/run/cri-dockerd.sock\"" >> /etc/default/kubelet
 systemctl restart kubelet
 
 # Configure kubectl autocompletion
