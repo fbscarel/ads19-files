@@ -81,6 +81,8 @@ find /usr/local/bin -name lab-* | xargs dos2unix
 # Prepare SSH inter-VM communication
 mv /home/vagrant/ssh/* /home/vagrant/.ssh
 rm -r /home/vagrant/ssh
+dos2unix /home/vagrant/.ssh/tmpkey
+dos2unix /home/vagrant/.ssh/tmpkey.pub
 cat /home/vagrant/.ssh/tmpkey.pub >> /home/vagrant/.ssh/authorized_keys
 cat << EOF >> /home/vagrant/.ssh/config
 Host s2-*
