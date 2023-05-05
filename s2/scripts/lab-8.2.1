@@ -1,3 +1,4 @@
 #!/bin/bash
 
 kubectl delete -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml &> /dev/null
+kubectl -n kube-system delete pod -l k8s-app=calico-kube-controllers --grace-period=0 --force &> /dev/null
